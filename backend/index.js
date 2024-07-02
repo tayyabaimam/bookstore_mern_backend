@@ -1,13 +1,21 @@
-import express from "express";
-import { PORT, mongoDBURL } from "./config.js";
-import mongoose from "mongoose";
-import booksRoute from './routes/BookRoute.js'
-import cors from 'cors';
+const express= require("express");
+const  { json } = require("express");
+const cors= require("cors");
+const cookieParser= require("cookie-parser");
+
+const { PORT, mongoDBURL }= require("./config.js");
+const booksRoute = require("./routes/BookRoute.js");
+const userRoute = require("./routes/userRoute.js");
+const restrictToLoggedinUserOnly = require("./middlewares/auth.js");
+
+const {connectMongoDb} = require("./connection.js");
 
 const app = express();
 
-//adding middleware for parsing request body
-app.use(express.json());
+//adding middleware for parsing json data in request body
+app.use(json());
+
+app.use(cookieParser());
 
 //middleware for handling cors policy
 //option1: allow all origins with default of cors(*)
@@ -24,20 +32,15 @@ app.use(
 //patches uri with response
 app.get("/", (request, response) => {
   console.log(request);
-  return response.status(234).send("Welcome To MERN Stack Tutorial");
+  //status 200 is used to confirm backend is running
+  return response.status(200).send("Welcome To MERN Stack Tutorial");
 });
 
 app.use('/books', booksRoute);
+app.use('/user', restrictToLoggedinUserOnly, userRoute);
 
-//connects to database
-mongoose
-  .connect(mongoDBURL)
-  .then(() => {
-    console.log("App connected to database");
-    app.listen(PORT, () => {
-      console.log(`App is listening to port: ${PORT}`);
-    });
-  })
-  .catch((error) => {
-    console.log(error);
-  });
+connectMongoDb(mongoDBURL);
+
+app.listen(PORT, () => {
+  console.log(`App is listening to port: ${PORT}`);
+});

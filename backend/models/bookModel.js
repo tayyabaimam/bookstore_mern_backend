@@ -1,6 +1,6 @@
-import mongoose from "mongoose";
+const { Schema, model } = require("mongoose");
 
-const bookSchema = mongoose.Schema(
+const bookSchema = new Schema(
     {
         title: {
             type: String,
@@ -15,8 +15,10 @@ const bookSchema = mongoose.Schema(
             required: true,
         },
     },
+    //default value for timestamp is false. gives access to created and modified dates
     {
         timestamps: true
     }
 )
-export const Book = mongoose.model('Cat', bookSchema);
+const Book = model('Book', bookSchema);
+module.exports = Book;
